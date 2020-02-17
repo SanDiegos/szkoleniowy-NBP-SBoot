@@ -1,8 +1,6 @@
 package com.djedra.parser;
 
-import com.djedra.entity.IEntityHead;
-
-public interface IParser<S, D extends IEntityHead> {
+public interface IParser<S, D> {
 
 	D parse(S data);
 }

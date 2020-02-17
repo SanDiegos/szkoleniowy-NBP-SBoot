@@ -2,44 +2,49 @@ package com.djedra.controller;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Objects;
 
-import com.djedra.calculations.Calculations;
+import javax.validation.Valid;
+import javax.validation.constraints.PastOrPresent;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.djedra.entity.currency.Currency;
-import com.djedra.entity.tableType.Example;
-import com.djedra.service.CurrencyService;
-import com.djedra.util.Constants.ActualExchangeRateTableTypes;
-import com.djedra.util.Constants.CurrencyCode;
-import com.djedra.util.Constants.ExchangeRatesTableTypes;
+import com.djedra.facade.CurrencyFacade;
 
+@RestController
+@RequestMapping(value = "/currency")
 public class CurrencyController {
 
-	private final CurrencyService currencyService = new CurrencyService();
+	@Autowired
+	private CurrencyFacade currencyFacade;
 
-	public Currency getExchangeRateForDate(ActualExchangeRateTableTypes tableType, CurrencyCode currencyCode,
-			/* @Valid @PastOrPresent */ LocalDate date) {
-		ControllerArgumentsValidator.checkIfDateIsPastOrPresent(date);
-		return currencyService.getExchangeRateForDate(tableType, currencyCode, date);
+	@Valid
+	@GetMapping("/get-by-date")
+	public Currency getExchangeRateForDate(@RequestParam String tableType, @RequestParam String currencyCode,
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @PastOrPresent LocalDate date) {
+//		ControllerArgumentsValidator.checkIfDateIsPastOrPresent(date);
+		return currencyFacade.getExchangeRateForDate(tableType, currencyCode, date);
 	}
 
-	public Currency getCurrentExchangeRate(ActualExchangeRateTableTypes tableType, CurrencyCode currencyCode) {
-		return currencyService.getCurrentExchangeRate(tableType, currencyCode);
+//	public Currency getExchangeRateFromFile(String path) {
+//		return currencyService.getExchangeRateFromFile(() -> path);
+//	}
+	
+	@GetMapping("/exchange")
+	public BigDecimal exchange(@RequestParam String tableType, @RequestParam String currencyCode,
+			@RequestParam BigDecimal amount) {
+		return currencyFacade.exchange(tableType, currencyCode, amount);
 	}
 
-	public Example getExchangeRatesTable(ExchangeRatesTableTypes tableType) {
-		return currencyService.getCurrentExchangeRates(tableType);
-	}
-
-	public Currency getExchangeRateFromFile(String path) {
-		return currencyService.getExchangeRateFromFile(() -> path);
-	}
-
-	public BigDecimal exchange(ActualExchangeRateTableTypes tableType, CurrencyCode currencyCode, BigDecimal amount) {
-		Currency curr = currencyService.getCurrentExchangeRate(tableType, currencyCode);
-		if (Objects.isNull(curr) || Objects.isNull(curr.getRate())) {
-			throw new RuntimeException("Didn't found current course currency.");
-		}
-		return Calculations.exchange(amount, curr.getRate());
+	@GetMapping("/get-currency-course")
+	public Currency getByCurrencyCode(@RequestParam String tableType, @RequestParam String currencyCode)
+			throws Exception {
+		return currencyFacade.getCurrentExchangeRate(tableType, currencyCode);
 	}
 
 }

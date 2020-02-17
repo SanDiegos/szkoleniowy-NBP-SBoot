@@ -1,23 +1,32 @@
 package com.djedra.entity.tableType;
 
-import java.util.List;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
 import com.djedra.entity.IEntityHead;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 
-@Getter
-@Setter
-@ToString
-public class Example implements IEntityHead {
+@Data
+@Entity
+//@Table(name = "example_table")
+public class Example{
 
-	private String table;
-	@JsonProperty("no")
-	private String id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Integer id;
+	@Column
+	private String tableeee;
+	@Column
+	private String no;
+	@Column
 	private String effectiveDate;
+	@Column
 	private String tradingDate;
-	private List<Rate> rates = null;
+//	@OneToMany(cascade = CascadeType.ALL, mappedBy = "example", fetch = FetchType.EAGER)
+//	private List<RateExample> rates = null;
 }

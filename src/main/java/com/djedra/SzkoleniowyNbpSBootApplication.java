@@ -1,4 +1,4 @@
-package com.djedra.szkoleniowyNBPSBoot;
+package com.djedra;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
