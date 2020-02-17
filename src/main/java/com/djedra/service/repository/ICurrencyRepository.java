@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.djedra.entity.currency.Currency;
 
-public interface ICurrencyRepository extends JpaRepository<Integer, Currency>{
+public interface ICurrencyRepository extends JpaRepository<Currency, Integer>{
 
 	public Currency findCurrencyByTableAndCodeAndRate_Rates(String tableType, String currencyCode,
 			LocalDate date);

@@ -20,7 +20,7 @@ public class Example{
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 	@Column
-	private String tableeee;
+	private String table;
 	@Column
 	private String no;
 	@Column

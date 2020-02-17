@@ -22,7 +22,7 @@ public class Currency{
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 	@Column
-	private String tableee;
+	private String table;
 	@Column
 	private String currency;
 	@Column
