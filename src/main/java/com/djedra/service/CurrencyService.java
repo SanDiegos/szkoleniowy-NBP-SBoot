@@ -13,7 +13,7 @@ import org.springframework.web.client.RestTemplate;
 import com.djedra.connection.ExchangeRateURLEnhancer;
 import com.djedra.entity.currency.Currency;
 import com.djedra.exception.ConnectionException;
-import com.djedra.service.repository.ICurrencyRepository;
+import com.djedra.repository.ICurrencyRepository;
 import com.djedra.util.Constants;
 import com.djedra.util.Constants.ActualExchangeRateTableTypes;
 import com.djedra.util.Constants.CurrencyCode;
@@ -23,46 +23,48 @@ public class CurrencyService {
 
 	@Autowired
 	private ICurrencyRepository currencyRepository;
-	@Autowired
-	private RestTemplate restTemplate;
-	
+
 	public Currency getExchangeRateForDate(ActualExchangeRateTableTypes tableType, CurrencyCode currencyCode,
 			LocalDate date) {
 
 		Currency currency = null;
 		int loop = Constants.NUMBER_OF_REPEATINGS_IN_SEARCH_FOR_DAY;
-		while(Objects.isNull(currency)  && loop > 0){
+		while (Objects.isNull(currency) && loop > 0) {
 //			restTemplate.getForEntity(new ExchangeRateURLEnhancer(NBPBaseURL.EXCHANGE_RATE_DATE, tableType, currencyCode, date).getPath(), Currency.class);
-			
-			currency = currencyRepository.findCurrencyByTableAndCodeAndRate_Rates(tableType.getValue(), currencyCode.getCurrencyCode(), date);
-//			if(Objects.isNull(currency)) {
+
+			currency = currencyRepository.findCurrencyBytableTypeAndCodeAndRates_effectiveDate(tableType.getValue(),
+					currencyCode.getCurrencyCode(), date);
+			if (Objects.isNull(currency)) {
 				URL url = new ExchangeRateURLEnhancer(tableType, currencyCode, date).getPath();
 				currency = makeRequestToNBP(url);
 				date = date.minusDays(1);
 				--loop;
-//			}
+			}
 		}
-		
+
 //		if(Objects.isNull(currency)){
 //			strzel_do_NBP_API
 //		}
-		
+
 //		if(zwrocone_z_api null){
 //          obniz date
 //			potarzaj az znajdziesz
-			
+
 //		}else(){
 //			update na bazie danych i zwrovcenie
 //		}
 		return currency;
 	}
 
-	public Currency getCurrentExchangeRate(ActualExchangeRateTableTypes tableType, CurrencyCode currencyCode) {	
-		Currency currency = currencyRepository.findCurrencyByTableAndCode(tableType.getValue(), currencyCode.getCurrencyCode());
-		return Objects.nonNull(currency) ? currency : makeRequestToNBP(new ExchangeRateURLEnhancer(tableType,currencyCode).getPath());
+	public Currency getCurrentExchangeRate(ActualExchangeRateTableTypes tableType, CurrencyCode currencyCode) {
+		Currency currency = currencyRepository.findCurrencyBytableTypeAndCode(tableType.getValue(),
+				currencyCode.getCurrencyCode());
+		return Objects.nonNull(currency) ? currency
+				: makeRequestToNBP(new ExchangeRateURLEnhancer(tableType, currencyCode).getPath());
 	}
 
 	private Currency makeRequestToNBP(URL url) {
+		RestTemplate restTemplate = new RestTemplate();
 		try {
 			return restTemplate.getForObject(url.toURI(), Currency.class);
 		} catch (RestClientException e) {

@@ -1,6 +1,7 @@
 package com.djedra.entity.currency;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -15,18 +16,18 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
-//@Entity
+@Entity
 public class RateCurrency {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
+
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "currency_id", nullable = false)
 	private Currency currency;
-	
-	private String effectiveDate;
+
+	private LocalDate effectiveDate;
 	@JsonProperty("mid")
 	private BigDecimal rate;
 	private String no;
