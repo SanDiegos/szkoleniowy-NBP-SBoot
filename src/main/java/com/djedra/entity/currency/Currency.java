@@ -18,9 +18,20 @@ import lombok.Data;
 
 @Data
 @Entity
-//@Table(name = "currency_table")
 public class Currency {
 
+	public Currency() {
+		
+	}
+	
+	public Currency(String tableType, String currency, String code, List<Rate> rates) {
+		super();
+		this.tableType = tableType;
+		this.currency = currency;
+		this.code = code;
+		this.rates = rates;
+	}
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -28,9 +39,8 @@ public class Currency {
 	private String tableType;
 	private String currency;
 	private String code;
-	@OneToMany(cascade = CascadeType.ALL, mappedBy = "currency", fetch = FetchType.EAGER)
-	@JsonProperty("rates")
-	private List<RateCurrency> rates;
+	@OneToMany(cascade = CascadeType.ALL, mappedBy = "currency")
+	private List<Rate> rates;
 
 	public BigDecimal getRate() {
 		if (Objects.isNull(rates) || rates.isEmpty() || Objects.isNull(rates.get(0).getRate())) {
@@ -38,4 +48,5 @@ public class Currency {
 		}
 		return rates.get(0).getRate();
 	}
+
 }

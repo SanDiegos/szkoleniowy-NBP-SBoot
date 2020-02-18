@@ -3,6 +3,8 @@ package com.djedra.service;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.djedra.connection.ExchangeRateURLEnhancer;
 import com.djedra.entity.currency.Currency;
+import com.djedra.entity.currency.Rate;
 import com.djedra.exception.ConnectionException;
 import com.djedra.repository.ICurrencyRepository;
 import com.djedra.util.Constants;
@@ -36,11 +39,25 @@ public class CurrencyService {
 					currencyCode.getCurrencyCode(), date);
 			if (Objects.isNull(currency)) {
 				URL url = new ExchangeRateURLEnhancer(tableType, currencyCode, date).getPath();
-				currency = makeRequestToNBP(url);
+				Currency currNBP = makeRequestToNBP(url);
+				Rate rate = currNBP.getRates().get(0);
+				currNBP.setRates(null);
+				rate.setCurrency(currNBP);
+				currency = new Currency(null, null, null, Arrays.asList(rate));
+				
+				Currency currencyNew = new Currency(currNBP.getTableType(), currNBP.getCurrency(), currNBP.getCode(), Arrays.asList(rate));
+				currencyNew.getRates().get(0).setCurrency(currNBP);
+				currencyRepository.save(currency);
+//				List<Rate> rate = currency.getRates();
+//				if(Objects.nonNull(rate) && rate.size() ==1) {
+//					Currency curr = new Currency(currency.getTableType(), currency.getCurrency(), currency.getCode(), null);
+//					currency.getRates().get(0).setCurrency(curr);
+//				}
 				date = date.minusDays(1);
 				--loop;
 			}
 		}
+//		currencyRepository.save(currency);
 
 //		if(Objects.isNull(currency)){
 //			strzel_do_NBP_API
