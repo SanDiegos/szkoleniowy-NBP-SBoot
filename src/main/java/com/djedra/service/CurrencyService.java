@@ -3,8 +3,6 @@ package com.djedra.service;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +15,7 @@ import com.djedra.entity.currency.Currency;
 import com.djedra.entity.currency.Rate;
 import com.djedra.exception.ConnectionException;
 import com.djedra.repository.ICurrencyRepository;
+import com.djedra.repository.IRateRepository;
 import com.djedra.util.Constants;
 import com.djedra.util.Constants.ActualExchangeRateTableTypes;
 import com.djedra.util.Constants.CurrencyCode;
@@ -24,8 +23,14 @@ import com.djedra.util.Constants.CurrencyCode;
 @Service
 public class CurrencyService {
 
-	@Autowired
 	private ICurrencyRepository currencyRepository;
+	private IRateRepository rateRepository;
+
+	@Autowired
+	public CurrencyService(ICurrencyRepository currencyRepository, IRateRepository rateRepository) {
+		this.currencyRepository = currencyRepository;
+		this.rateRepository = rateRepository;
+	}
 
 	public Currency getExchangeRateForDate(ActualExchangeRateTableTypes tableType, CurrencyCode currencyCode,
 			LocalDate date) {
@@ -33,43 +38,19 @@ public class CurrencyService {
 		Currency currency = null;
 		int loop = Constants.NUMBER_OF_REPEATINGS_IN_SEARCH_FOR_DAY;
 		while (Objects.isNull(currency) && loop > 0) {
-//			restTemplate.getForEntity(new ExchangeRateURLEnhancer(NBPBaseURL.EXCHANGE_RATE_DATE, tableType, currencyCode, date).getPath(), Currency.class);
-
 			currency = currencyRepository.findCurrencyBytableTypeAndCodeAndRates_effectiveDate(tableType.getValue(),
 					currencyCode.getCurrencyCode(), date);
 			if (Objects.isNull(currency)) {
 				URL url = new ExchangeRateURLEnhancer(tableType, currencyCode, date).getPath();
-				Currency currNBP = makeRequestToNBP(url);
-				Rate rate = currNBP.getRates().get(0);
-				currNBP.setRates(null);
-				rate.setCurrency(currNBP);
-				currency = new Currency(null, null, null, Arrays.asList(rate));
-				
-				Currency currencyNew = new Currency(currNBP.getTableType(), currNBP.getCurrency(), currNBP.getCode(), Arrays.asList(rate));
-				currencyNew.getRates().get(0).setCurrency(currNBP);
-				currencyRepository.save(currency);
-//				List<Rate> rate = currency.getRates();
-//				if(Objects.nonNull(rate) && rate.size() ==1) {
-//					Currency curr = new Currency(currency.getTableType(), currency.getCurrency(), currency.getCode(), null);
-//					currency.getRates().get(0).setCurrency(curr);
-//				}
+				currency = makeRequestToNBP(url);
+				Rate rate = currency.getRates().get(0);
+				rate.setCurrency(currency);
+				rateRepository.save(rate);
+
 				date = date.minusDays(1);
 				--loop;
 			}
 		}
-//		currencyRepository.save(currency);
-
-//		if(Objects.isNull(currency)){
-//			strzel_do_NBP_API
-//		}
-
-//		if(zwrocone_z_api null){
-//          obniz date
-//			potarzaj az znajdziesz
-
-//		}else(){
-//			update na bazie danych i zwrovcenie
-//		}
 		return currency;
 	}
 
