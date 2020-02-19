@@ -6,19 +6,17 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDate;
+import java.util.HashMap;
 
 import com.djedra.exception.ConnectionException;
 import com.djedra.util.Constants;
-import com.djedra.util.Constants.ActualExchangeRateTableTypes;
-import com.djedra.util.Constants.CurrencyCode;
 
 public class FileDataProvider implements IDataProvider<String> {
 	public FileDataProvider() {
 	}
 
 	@Override
-	public boolean hasData(ActualExchangeRateTableTypes tableType, CurrencyCode currencyCode, LocalDate date) {
+	public boolean hasData(HashMap params) {
 		File file = new File(Constants.FILE_PATH);
 		if (!file.exists()) {
 			throw new ConnectionException(String.format("File doesn't exsists on directory: [%s]", file.getPath()));
@@ -27,7 +25,7 @@ public class FileDataProvider implements IDataProvider<String> {
 	}
 
 	@Override
-	public String downloadData(ActualExchangeRateTableTypes tableType, CurrencyCode currencyCode, LocalDate date) {
+	public String downloadData(HashMap params) {
 		Path path = Paths.get(Constants.FILE_PATH);
 		String data;
 		try {

@@ -1,24 +1,47 @@
 package com.djedra.connection;
 
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 import com.djedra.entity.exchangeratestable.ExchangeRatesTable;
-import com.djedra.util.Constants.ActualExchangeRateTableTypes;
-import com.djedra.util.Constants.CurrencyCode;
+import com.djedra.exception.ConnectionException;
+import com.djedra.util.Constants.ExchangeRatesTableNBPAPIParamsKey;
 
-public class NBPDataProviderExchangeRatesTable  implements IDataProvider<ExchangeRatesTable> {
+@Component
+public class NBPDataProviderExchangeRatesTable  implements IDataProvider<ExchangeRatesTable[]> {
 
 	@Override
-	public ExchangeRatesTable downloadData(ActualExchangeRateTableTypes tableType, CurrencyCode currencyCode,
-			LocalDate date) {
-		// TODO Auto-generated method stub
-		return null;
+	public ExchangeRatesTable[] downloadData(HashMap<String, Object> params) {
+		RestTemplate restTemplate = new RestTemplate();
+//		String currencyCode = (String) params.get(ExchangeRatesTableNBPAPIParamsKey.CURRENCY_CODE.getParamName());
+		LocalDate dateFrom = (LocalDate) params.get(ExchangeRatesTableNBPAPIParamsKey.DATE_FROM.getParamName());
+		LocalDate dateTo = (LocalDate) params.get(ExchangeRatesTableNBPAPIParamsKey.DATE_TO.getParamName());
+		String tableType = (String) params.get(ExchangeRatesTableNBPAPIParamsKey.TABLE_TYPE.getParamName());
+		
+		URL path = new ExchangeRateURLEnhancer(tableType, dateFrom, dateTo).getPath();
+		try {
+			ExchangeRatesTable[] dd = restTemplate.getForObject(path.toURI(), ExchangeRatesTable[].class);
+			return dd;
+		} catch (RestClientException e) {
+			throw new ConnectionException("Błąd połączenia z zewnętrznym API", e);
+		} catch (URISyntaxException e) {
+			throw new ConnectionException(String.format("Błędna składnia URI: [%s]", path.toString()), e);
+		}
 	}
 
 	@Override
-	public boolean hasData(ActualExchangeRateTableTypes tableType, CurrencyCode currencyCode, LocalDate date) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean hasData(HashMap<String, Object> params) {
+		return Objects.nonNull(downloadData(params));
 	}
 
 }

@@ -14,4 +14,10 @@ public class ControllerArgumentsValidator {
 			throw new RuntimeException("You cannot search for course currency in future.");
 		}
 	}
+	
+	public static void checkIfDateFromIsBeforeDateTo(LocalDate dateFrom, LocalDate dateTo) {
+		if (dateFrom.isAfter(dateTo)) {
+			throw new RuntimeException("Wrong dates \"from\" and \"to\".");
+		}
+	}
 }

@@ -11,6 +11,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
 
@@ -23,9 +24,10 @@ public class Rates {
 	private Long id;
 	private String code;
 	private String currency;
+	@JsonProperty("mid")
 	private BigDecimal rate;
 	@ManyToOne(cascade = CascadeType.ALL)
-	@JoinColumn(name = "echangeRatesTable_Id", nullable = false)
+	@JoinColumn(name = "echangeRatesTable_Id")
 	@JsonBackReference
 	private ExchangeRatesTable exchangeRatesTable;
 	
