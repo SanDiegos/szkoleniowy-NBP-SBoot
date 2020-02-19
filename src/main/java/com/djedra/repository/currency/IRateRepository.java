@@ -1,4 +1,4 @@
-package com.djedra.repository;
+package com.djedra.repository.currency;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

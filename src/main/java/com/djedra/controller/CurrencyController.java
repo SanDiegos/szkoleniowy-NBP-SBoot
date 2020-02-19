@@ -26,15 +26,11 @@ public class CurrencyController {
 	@Valid
 	@GetMapping("/get-by-date")
 	public Currency getExchangeRateForDate(@RequestParam String tableType, @RequestParam String currencyCode,
-			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @PastOrPresent LocalDate date) {
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) /* @PastOrPresent */ LocalDate date) {
 //		ControllerArgumentsValidator.checkIfDateIsPastOrPresent(date);
 		return currencyFacade.getExchangeRateForDate(tableType, currencyCode, date);
 	}
 
-//	public Currency getExchangeRateFromFile(String path) {
-//		return currencyService.getExchangeRateFromFile(() -> path);
-//	}
-	
 	@GetMapping("/exchange")
 	public BigDecimal exchange(@RequestParam String tableType, @RequestParam String currencyCode,
 			@RequestParam BigDecimal amount) {

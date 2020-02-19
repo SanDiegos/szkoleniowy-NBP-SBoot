@@ -13,7 +13,9 @@ public class Constants {
 
 		EXCHANGE_RATE("http://api.nbp.pl/api/exchangerates/rates/%s/%s/"),
 		EXCHANGE_RATE_DATE("http://api.nbp.pl/api/exchangerates/rates/%s/%s/%s/"),
-		EXCHANGE_RATES_TABLE("http://api.nbp.pl/api/exchangerates/tables/%s/");
+		EXCHANGE_RATES_TABLE("http://api.nbp.pl/api/exchangerates/tables/%s/"),
+		EXCHANGE_RATES_TABLE_DATE("http://api.nbp.pl/api/exchangerates/tables/%s/%s/%s/");
+		
 
 		private String url;
 

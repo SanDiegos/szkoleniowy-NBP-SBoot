@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 import com.djedra.calculations.Calculations;
 import com.djedra.entity.currency.Currency;
-import com.djedra.service.CurrencyService;
+import com.djedra.service.currency.CurrencyService;
 import com.djedra.util.Constants.ActualExchangeRateTableTypes;
 import com.djedra.util.Constants.CurrencyCode;
 import com.djedra.util.EnumUtil;

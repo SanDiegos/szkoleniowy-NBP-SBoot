@@ -15,15 +15,13 @@ import com.djedra.util.Constants.ActualExchangeRateTableTypes;
 import com.djedra.util.Constants.CurrencyCode;
 
 @Component
-public class NBPDataProvider implements IDataProvider<Currency> {
-
-	public NBPDataProvider() {
-	}
+public class NBPDataProviderCurrency implements IDataProvider<Currency> {
 
 	@Override
 	public Currency downloadData(ActualExchangeRateTableTypes tableType, CurrencyCode currencyCode, LocalDate date) {
 		RestTemplate restTemplate = new RestTemplate();
-		URL path = new ExchangeRateURLEnhancer(tableType, currencyCode, date).getPath();
+		
+		URL path = Objects.isNull(date) ? new ExchangeRateURLEnhancer(tableType, currencyCode).getPath() : new ExchangeRateURLEnhancer(tableType, currencyCode, date).getPath();
 		try {
 			return restTemplate.getForObject(path.toURI(), Currency.class);
 		} catch (RestClientException e) {
@@ -37,19 +35,4 @@ public class NBPDataProvider implements IDataProvider<Currency> {
 	public boolean hasData(ActualExchangeRateTableTypes tableType, CurrencyCode currencyCode, LocalDate date) {
 		return Objects.nonNull(downloadData(tableType, currencyCode, date));
 	}
-
-//	private HttpURLConnection httpURLConnectionCreator(ActualExchangeRateTableTypes tableType,
-//			CurrencyCode currencyCode, LocalDate date) {
-//
-//		URL url = Objects.isNull(date) ? new ExchangeRateURLEnhancer(tableType, currencyCode).getPath()
-//				: new ExchangeRateURLEnhancer(tableType, currencyCode, date).getPath();
-//		HttpURLConnection connection = null;
-//		try {
-//			connection = (HttpURLConnection) url.openConnection();
-//		} catch (IOException e) {
-//			throw new ConnectionException("Error while trying to open connection via HTTP.", e);
-//		}
-//		return connection;
-//	}
-
 }
