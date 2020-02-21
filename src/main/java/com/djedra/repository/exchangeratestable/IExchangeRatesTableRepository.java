@@ -17,7 +17,12 @@ public interface IExchangeRatesTableRepository extends JpaRepository<ExchangeRat
 
 	List<ExchangeRatesTable> findAllByeffectiveDateBetween(LocalDate dateFrom, LocalDate dateTo);
 
-	@Query(value = "SELECT MAX(Rates.rate) - MIN(Rates.rate), rates.code FROM Rates inner join Exchange_Rates_Table on Exchange_Rates_Table.ID = Rates.ECHANGE_RATES_TABLE_ID group by rates.code", nativeQuery = true)
+	@Query(value = "SELECT MAX(Rates.rate) - MIN(Rates.rate) as diffrence, rates.code FROM Rates inner join Exchange_Rates_Table on Exchange_Rates_Table.ID = Rates.ECHANGE_RATES_TABLE_ID group by rates.code ORDER BY diffrence DESC LIMIT 1", nativeQuery = true)
 	List<Object[]> findHighestCurrencyCourseDeffrenceBetweenDates();
 
+	List<ExchangeRatesTable> findTop5ByRates_CodeAndEffectiveDateBetweenOrderByRates_rateDesc(String currencyCode,
+			LocalDate dateFrom, LocalDate dateTo);
+
+	List<ExchangeRatesTable> findTop5ByRates_CodeAndEffectiveDateBetweenOrderByRates_rateAsc(String currencyCode,
+			LocalDate dateFrom, LocalDate dateTo);
 }

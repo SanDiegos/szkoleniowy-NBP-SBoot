@@ -4,19 +4,17 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import javax.validation.Valid;
 import javax.validation.constraints.PastOrPresent;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import com.djedra.calculations.Calculations;
+import com.djedra.controller.ControllerArgumentsValidator;
 import com.djedra.entity.currency.Currency;
-import com.djedra.entity.exchangeratestable.ExchangeRatesTable;
+import com.djedra.entity.exchangeratestable.Rates;
 import com.djedra.service.currency.CurrencyService;
 import com.djedra.service.exchangeratestable.ExchangeRatesTableService;
 import com.djedra.util.Constants.ExchangeRateTableTypes;
@@ -50,10 +48,6 @@ public class CurrencyFacade {
 		return currencyService.getCurrentExchangeRate(tabType, currencyCode);
 	}
 
-//	public Currency getExchangeRateFromFile(String patch) {
-//		return nbpController.getExchangeRateFromFile(patch);
-//	}
-
 	public BigDecimal exchange(String tableType, String currencyCode, BigDecimal amount) {
 
 		ExchangeRateTableTypes tabType = EnumUtil.getEnumByValue("tableType", tableType,
@@ -66,10 +60,12 @@ public class CurrencyFacade {
 	}
 
 	public BigDecimal getHighestCurrencyCourseBetweenDates(String currencyCode, LocalDate dateFrom, LocalDate dateTo) {
+		ControllerArgumentsValidator.checkIfDateFromIsBeforeDateTo(dateFrom, dateTo);
 		return exchangeRatesTableService.getHighestExchangeRatesTable(currencyCode, dateFrom, dateTo);
 	}
 
 	public String getCurrencyWithHighestCourseDiffrenceBetweenDates(LocalDate dateFrom, LocalDate dateTo) {
+		ControllerArgumentsValidator.checkIfDateFromIsBeforeDateTo(dateFrom, dateTo);
 		return exchangeRatesTableService.getCurrencyWithHighestDeffrenceBetweenDates(dateFrom, dateTo);
 	}
 
@@ -87,6 +83,18 @@ public class CurrencyFacade {
 
 	public Currency getById(Long currency_Id) {
 		return currencyService.getById(currency_Id);
+	}
+
+	public List<Rates> getFiveHighestOrLowestCurrencyCourse(String tableType, String currencyCode, LocalDate dateFrom,
+			LocalDate dateTo, Boolean topHigh) {
+		ControllerArgumentsValidator.checkIfDateFromIsBeforeDateTo(dateFrom, dateTo);
+		ExchangeRatesTableTypes tabType = EnumUtil.getEnumByValue("tableType", tableType,
+				ExchangeRatesTableTypes.class);
+		if (Objects.isNull(topHigh)) {
+			throw new RuntimeException("U must define which top 5 rates you need low or high.");
+		}
+		return exchangeRatesTableService.getFiveHighestOrLowestCurrencyCourse(tabType, currencyCode, dateFrom,
+				dateTo, topHigh.booleanValue());
 	}
 	
 	

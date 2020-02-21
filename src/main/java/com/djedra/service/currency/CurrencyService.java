@@ -6,6 +6,7 @@ import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.djedra.connection.IDataProvider;
 import com.djedra.entity.currency.Currency;
@@ -37,14 +38,23 @@ public class CurrencyService {
 		Currency currency = currencyRepository.findCurrencyBytableTypeAndCodeAndRates_effectiveDate(
 				tableType.getValue(), currencyCode, date);
 		if (Objects.isNull(currency)) {
-			int loop = Constants.NUMBER_OF_REPEATINGS_IN_SEARCH_FOR_DAY;
-			HashMap<String, Object> paramsForNBPAPIDataProvider = prepareParamsForNBPAPIDataProvider(tableType, currencyCode, date);
-			while (!dataProvider.hasData(paramsForNBPAPIDataProvider) && loop > 0) {
-				date = date.minusDays(1);
-				paramsForNBPAPIDataProvider.put(CurrencyNBPAPIParamsKey.DATE.getParamName(), date);
-				--loop;
-			}
-			currency = dataProvider.downloadData(paramsForNBPAPIDataProvider);
+			currency = saveDataFromDataProvider(tableType, currencyCode, date);
+		}
+		return currency;
+	}
+
+	@Transactional
+	private Currency saveDataFromDataProvider(ExchangeRateTableTypes tableType, String currencyCode, LocalDate date) {
+		Currency currency;
+		int loop = Constants.NUMBER_OF_REPEATINGS_IN_SEARCH_FOR_DAY;
+		HashMap<String, Object> paramsForNBPAPIDataProvider = prepareParamsForNBPAPIDataProvider(tableType, currencyCode, date);
+		while (!dataProvider.hasData(paramsForNBPAPIDataProvider) && loop > 0) {
+			date = date.minusDays(1);
+			paramsForNBPAPIDataProvider.put(CurrencyNBPAPIParamsKey.DATE.getParamName(), date);
+			--loop;
+		}
+		currency = dataProvider.downloadData(paramsForNBPAPIDataProvider);
+		if (Objects.nonNull(currency) && Objects.nonNull(currency.getRates()) && currency.getRates().size() > 0) {
 			Rate rate = currency.getRates().get(0);
 			rate.setCurrency(currency);
 			rateRepository.save(rate);
@@ -81,11 +91,5 @@ public class CurrencyService {
 	public Currency getById(Long currency_Id) {
 		return currencyRepository.findById(currency_Id).orElseThrow(() -> new RuntimeException(String.format("Didn't find currency having Id: [%d]", currency_Id)));
 	}
-	 
-//	public List<Currency> getCurrentExchangeRate(ActualExchangeRateTableTypes tableType, CurrencyCode currencyCode) {
-//		List<Currency> currency = currencyRepository.findAllCurrencyBytableTypeAndCode(tableType.getValue(),
-//				currencyCode.getCurrencyCode());
-//		return currency;
-//	}
 
 }

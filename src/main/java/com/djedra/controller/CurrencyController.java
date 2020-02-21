@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.djedra.entity.currency.Currency;
+import com.djedra.entity.exchangeratestable.Rates;
 import com.djedra.facade.CurrencyFacade;
 
 @RestController
@@ -57,13 +58,22 @@ public class CurrencyController {
 	@GetMapping("/get-currency-highest-course-diffrence-between-dates")
 	public String getCurrencyWithHighestCourseDiffrenceBetweenDates(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo)
 			throws Exception {
-		ControllerArgumentsValidator.checkIfDateFromIsBeforeDateTo(dateFrom, dateTo);
 		return currencyFacade.getCurrencyWithHighestCourseDiffrenceBetweenDates(dateFrom, dateTo);
 	}
 	
 	@GetMapping("/get-country-having-more-than-one-currency")
-	public List<String> getCountryHavingMoreThanOneCurrency()	throws Exception {
+	public List<String> getCountryHavingMoreThanOneCurrency() throws Exception {
 		return currencyFacade.getCountryHavingMoreThanOneCurrency();
+	}
+	
+//	tu dodać daty aby określić z jakiego okresu?
+	@GetMapping("/get-five-highest-and-lowest-currency-courses")
+	public List<Rates> getFiveHighestAndLowestCurrencyCourse(@RequestParam String tableType,
+			@RequestParam String currencyCode,
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,
+			@RequestParam Boolean topHigh) {
+		return currencyFacade.getFiveHighestOrLowestCurrencyCourse(tableType, currencyCode, dateFrom, dateTo, topHigh);
 	}
 	
 	@PostMapping()

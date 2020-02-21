@@ -3,10 +3,7 @@ package com.djedra.connection;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.stereotype.Component;
@@ -23,15 +20,13 @@ public class NBPDataProviderExchangeRatesTable  implements IDataProvider<Exchang
 	@Override
 	public ExchangeRatesTable[] downloadData(HashMap<String, Object> params) {
 		RestTemplate restTemplate = new RestTemplate();
-//		String currencyCode = (String) params.get(ExchangeRatesTableNBPAPIParamsKey.CURRENCY_CODE.getParamName());
 		LocalDate dateFrom = (LocalDate) params.get(ExchangeRatesTableNBPAPIParamsKey.DATE_FROM.getParamName());
 		LocalDate dateTo = (LocalDate) params.get(ExchangeRatesTableNBPAPIParamsKey.DATE_TO.getParamName());
 		String tableType = (String) params.get(ExchangeRatesTableNBPAPIParamsKey.TABLE_TYPE.getParamName());
 		
 		URL path = new ExchangeRateURLEnhancer(tableType, dateFrom, dateTo).getPath();
 		try {
-			ExchangeRatesTable[] dd = restTemplate.getForObject(path.toURI(), ExchangeRatesTable[].class);
-			return dd;
+			return restTemplate.getForObject(path.toURI(), ExchangeRatesTable[].class);
 		} catch (RestClientException e) {
 			throw new ConnectionException("Błąd połączenia z zewnętrznym API", e);
 		} catch (URISyntaxException e) {
@@ -43,5 +38,4 @@ public class NBPDataProviderExchangeRatesTable  implements IDataProvider<Exchang
 	public boolean hasData(HashMap<String, Object> params) {
 		return Objects.nonNull(downloadData(params));
 	}
-
 }
