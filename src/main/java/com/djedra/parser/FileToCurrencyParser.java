@@ -3,7 +3,7 @@ package com.djedra.parser;
 import java.io.File;
 import java.io.IOException;
 
-import com.djedra.entity.currency.Currency;
+import com.djedra.entity.Currency;
 import com.djedra.exception.ParserException;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;

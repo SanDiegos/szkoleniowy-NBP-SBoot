@@ -18,9 +18,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.djedra.entity.currency.Currency;
-import com.djedra.entity.exchangeratestable.Rates;
+import com.djedra.entity.Currency;
 import com.djedra.facade.CurrencyFacade;
+import com.djedra.nbpexchangeratestablepojo.exchangeratestable.NBPExchangeRatesTableRatesPOJO;
 
 @RestController
 @RequestMapping(value = "/currency")
@@ -68,7 +68,7 @@ public class CurrencyController {
 	
 //	tu dodać daty aby określić z jakiego okresu?
 	@GetMapping("/get-five-highest-and-lowest-currency-courses")
-	public List<Rates> getFiveHighestAndLowestCurrencyCourse(@RequestParam String tableType,
+	public List<NBPExchangeRatesTableRatesPOJO> getFiveHighestAndLowestCurrencyCourse(@RequestParam String tableType,
 			@RequestParam String currencyCode,
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,

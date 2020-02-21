@@ -10,15 +10,15 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import com.djedra.entity.exchangeratestable.ExchangeRatesTable;
 import com.djedra.exception.ConnectionException;
+import com.djedra.nbpexchangeratestablepojo.exchangeratestable.NBPExchangeRatesTablePOJO;
 import com.djedra.util.Constants.ExchangeRatesTableNBPAPIParamsKey;
 
 @Component
-public class NBPDataProviderExchangeRatesTable  implements IDataProvider<ExchangeRatesTable[]> {
+public class NBPDataProviderExchangeRatesTable implements IDataProvider<NBPExchangeRatesTablePOJO[]> {
 
 	@Override
-	public ExchangeRatesTable[] downloadData(HashMap<String, Object> params) {
+	public NBPExchangeRatesTablePOJO[] downloadData(HashMap<String, Object> params) {
 		RestTemplate restTemplate = new RestTemplate();
 		LocalDate dateFrom = (LocalDate) params.get(ExchangeRatesTableNBPAPIParamsKey.DATE_FROM.getParamName());
 		LocalDate dateTo = (LocalDate) params.get(ExchangeRatesTableNBPAPIParamsKey.DATE_TO.getParamName());
@@ -26,7 +26,7 @@ public class NBPDataProviderExchangeRatesTable  implements IDataProvider<Exchang
 		
 		URL path = new ExchangeRateURLEnhancer(tableType, dateFrom, dateTo).getPath();
 		try {
-			return restTemplate.getForObject(path.toURI(), ExchangeRatesTable[].class);
+			return restTemplate.getForObject(path.toURI(), NBPExchangeRatesTablePOJO[].class);
 		} catch (RestClientException e) {
 			throw new ConnectionException("Błąd połączenia z zewnętrznym API", e);
 		} catch (URISyntaxException e) {

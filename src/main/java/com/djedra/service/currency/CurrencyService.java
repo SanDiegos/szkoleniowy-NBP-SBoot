@@ -9,10 +9,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.djedra.connection.IDataProvider;
-import com.djedra.entity.currency.Currency;
-import com.djedra.entity.currency.Rate;
-import com.djedra.repository.currency.ICurrencyRepository;
-import com.djedra.repository.currency.IRateRepository;
+import com.djedra.entity.Currency;
+import com.djedra.nbpjsontopojo.currency.NBPCurrencyPOJO;
+import com.djedra.parser.IParser;
+import com.djedra.repository.ICountryRepository;
+import com.djedra.repository.ICurrencyRepository;
 import com.djedra.util.Constants;
 import com.djedra.util.Constants.CurrencyNBPAPIParamsKey;
 import com.djedra.util.Constants.ExchangeRateTableTypes;
@@ -21,22 +22,22 @@ import com.djedra.util.Constants.ExchangeRateTableTypes;
 public class CurrencyService {
 
 	private ICurrencyRepository currencyRepository;
-	private IRateRepository rateRepository;
-	private IDataProvider<Currency> dataProvider;
+	private IDataProvider<NBPCurrencyPOJO> dataProvider;
+	private IParser<NBPCurrencyPOJO, Currency> parser;
+	private ICountryRepository countryRepository;
 
 	@Autowired
-	public CurrencyService(ICurrencyRepository currencyRepository, IRateRepository rateRepository,
-			IDataProvider<Currency> dataProvider) {
+	public CurrencyService(ICurrencyRepository currencyRepository, ICountryRepository countryRepository,
+			IDataProvider<NBPCurrencyPOJO> dataProvider, IParser<NBPCurrencyPOJO, Currency> parser) {
 		this.currencyRepository = currencyRepository;
-		this.rateRepository = rateRepository;
 		this.dataProvider = dataProvider;
+		this.parser = parser;
+		this.countryRepository = countryRepository;
 	}
 
 	public Currency getExchangeRateForDate(ExchangeRateTableTypes tableType, String currencyCode,
 			LocalDate date) {
-
-		Currency currency = currencyRepository.findCurrencyBytableTypeAndCodeAndRates_effectiveDate(
-				tableType.getValue(), currencyCode, date);
+		Currency currency = currencyRepository.findByCodeAndRates_Date(currencyCode, date);
 		if (Objects.isNull(currency)) {
 			currency = saveDataFromDataProvider(tableType, currencyCode, date);
 		}
@@ -44,8 +45,9 @@ public class CurrencyService {
 	}
 
 	@Transactional
-	private Currency saveDataFromDataProvider(ExchangeRateTableTypes tableType, String currencyCode, LocalDate date) {
-		Currency currency;
+	private Currency saveDataFromDataProvider(ExchangeRateTableTypes tableType, String currencyCode,
+			LocalDate date) {
+		Currency currency = null;
 		int loop = Constants.NUMBER_OF_REPEATINGS_IN_SEARCH_FOR_DAY;
 		HashMap<String, Object> paramsForNBPAPIDataProvider = prepareParamsForNBPAPIDataProvider(tableType, currencyCode, date);
 		while (!dataProvider.hasData(paramsForNBPAPIDataProvider) && loop > 0) {
@@ -53,19 +55,22 @@ public class CurrencyService {
 			paramsForNBPAPIDataProvider.put(CurrencyNBPAPIParamsKey.DATE.getParamName(), date);
 			--loop;
 		}
-		currency = dataProvider.downloadData(paramsForNBPAPIDataProvider);
-		if (Objects.nonNull(currency) && Objects.nonNull(currency.getRates()) && currency.getRates().size() > 0) {
-			Rate rate = currency.getRates().get(0);
-			rate.setCurrency(currency);
-			rateRepository.save(rate);
+		NBPCurrencyPOJO nbpCurrencyPOJO = dataProvider.downloadData(paramsForNBPAPIDataProvider);
+		if (Objects.nonNull(nbpCurrencyPOJO) && Objects.nonNull(nbpCurrencyPOJO.getRates())
+				&& nbpCurrencyPOJO.getRates().size() == 1) {
+			currency = parser.parse(nbpCurrencyPOJO);
+			currency = currencyRepository.save(currency);
+			countryRepository.saveAll(currency.getCountry());
 		}
 		return currency;
 	}
 
 	public Currency getCurrentExchangeRate(ExchangeRateTableTypes tableType, String currencyCode) {
-		Currency currency = currencyRepository.findCurrencyBytableTypeAndCodeAndRates_effectiveDate(
-				tableType.getValue(), currencyCode, LocalDate.now());
-		return Objects.nonNull(currency) ? currency : dataProvider.downloadData(prepareParamsForNBPAPIDataProvider(tableType, currencyCode, null));
+		Currency currency = currencyRepository.findByCodeAndRates_Date(currencyCode, LocalDate.now());
+		if (Objects.isNull(currency)) {
+			currency = saveDataFromDataProvider(tableType, currencyCode, null);
+		}
+		return currency;
 	}
 	
 	private HashMap<String, Object> prepareParamsForNBPAPIDataProvider(ExchangeRateTableTypes tableType, String currencyCode,
