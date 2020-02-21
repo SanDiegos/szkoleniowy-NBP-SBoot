@@ -18,6 +18,14 @@ import lombok.Data;
 @Entity
 public class ExchangeRatesTable {
 
+	public ExchangeRatesTable(Long id, String tableType, LocalDate effectiveDate, String no, List<Rates> rates) {
+		super();
+		this.id = id;
+		this.tableType = tableType;
+		this.effectiveDate = effectiveDate;
+		this.no = no;
+		this.rates = rates;
+	}
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;

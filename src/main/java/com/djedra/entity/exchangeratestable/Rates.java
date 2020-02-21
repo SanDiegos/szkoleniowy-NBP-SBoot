@@ -19,6 +19,14 @@ import lombok.Data;
 @Entity
 public class Rates {
 
+	public Rates(Long id, String code, String currency, BigDecimal rate, ExchangeRatesTable exchangeRatesTable) {
+		super();
+		this.id = id;
+		this.code = code;
+		this.currency = currency;
+		this.rate = rate;
+		this.exchangeRatesTable = exchangeRatesTable;
+	}
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
