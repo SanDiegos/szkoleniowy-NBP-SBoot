@@ -15,7 +15,6 @@ public class Constants {
 		EXCHANGE_RATE_DATE("http://api.nbp.pl/api/exchangerates/rates/%s/%s/%s/"),
 		EXCHANGE_RATES_TABLE("http://api.nbp.pl/api/exchangerates/tables/%s/"),
 		EXCHANGE_RATES_TABLE_DATE("http://api.nbp.pl/api/exchangerates/tables/%s/%s/%s/");
-		
 
 		private String url;
 
@@ -24,7 +23,7 @@ public class Constants {
 		}
 	}
 
-	public enum ActualExchangeRateTableTypes implements IEnumType<String>, ITableType {
+	public enum ExchangeRateTableTypes implements IEnumType<String>, ITableType {
 		A, C;
 
 		@Override
@@ -42,23 +41,48 @@ public class Constants {
 		}
 	}
 
-	@Getter
-	public enum CurrencyCode implements IEnumType<String> {
-		SWEDISH_KORONA("SEK"), SWISS_FRANC("CHF"), EURO("EUR"), US_DOLLAR("USD");
-
-		private String currencyCode;
-
-		CurrencyCode(String currencyCode) {
-			this.currencyCode = currencyCode;
-		}
-
-		@Override
-		public String getValue() {
-			return currencyCode;
-		}
-	}
+//	@Getter
+//	public enum CurrencyCode implements IEnumType<String> {
+//		SWEDISH_KORONA("SEK"), SWISS_FRANC("CHF"), EURO("EUR"), US_DOLLAR("USD");
+//
+//		private String currencyCode;
+//
+//		CurrencyCode(String currencyCode) {
+//			this.currencyCode = currencyCode;
+//		}
+//
+//		@Override
+//		public String getValue() {
+//			return currencyCode;
+//		}
+//	}
 
 	public enum httpResponseType {
 		json, xml;
 	}
+	
+	@Getter
+	public enum CurrencyNBPAPIParamsKey{
+		TABLE_TYPE("tableType"), CURRENCY_CODE("currencyCode"), DATE("date");
+
+		private String paramName;
+
+		CurrencyNBPAPIParamsKey(String paramName) {
+			this.paramName = paramName;
+		}
+
+	}
+	
+	@Getter
+	public enum ExchangeRatesTableNBPAPIParamsKey{
+		TABLE_TYPE("tableType"), DATE_FROM("dateFrom"), DATE_TO("dateTo");
+
+		private String paramName;
+
+		ExchangeRatesTableNBPAPIParamsKey(String paramName) {
+			this.paramName = paramName;
+		}
+
+	}
+
 }

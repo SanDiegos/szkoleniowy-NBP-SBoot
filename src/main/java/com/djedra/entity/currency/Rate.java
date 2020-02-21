@@ -5,7 +5,6 @@ import java.time.LocalDate;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -22,6 +21,17 @@ import lombok.Data;
 public class Rate {
 
 	
+	public Rate(Long id, Currency currency, LocalDate effectiveDate, BigDecimal rate, String no, BigDecimal bid,
+			BigDecimal ask) {
+		super();
+		this.id = id;
+		this.currency = currency;
+		this.effectiveDate = effectiveDate;
+		this.rate = rate;
+		this.no = no;
+		this.bid = bid;
+		this.ask = ask;
+	}
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
