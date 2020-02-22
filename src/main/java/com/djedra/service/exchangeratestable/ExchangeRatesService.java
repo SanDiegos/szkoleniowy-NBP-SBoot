@@ -94,16 +94,33 @@ public class ExchangeRatesService {
 			List<CurrencyToCountry> currencyToRate = currencyFromRepo.getCurrencyToRates();
 			List<String> currencyCodes = currencyToRate.stream().map(ctr -> ctr.getCurrency().getCode())
 					.collect(Collectors.toList());
+			List<String> currencyCountrys = currencyToRate.stream().map(ctr -> ctr.getCountry().getName())
+					.collect(Collectors.toList());
 			if (!currencyCodes.contains(currency2.getCode())) {
 				Country save = countryRepository.save(currency2.getCurrencyToRates().get(0).getCountry());
 				CurrencyToCountry currToCount = new CurrencyToCountry(currency2, save);
 				currencyToCountryRepository.save(currToCount);
 			}
+			List<String> collect = currency2.getCurrencyToRates().stream().map(ctr -> ctr.getCountry().getName())
+					.collect(Collectors.toList());
+			for (String c : collect) {
+				if (!currencyCountrys.contains(c)) {
+					Country save = countryRepository.save(currency2.getCurrencyToRates().get(0).getCountry());
+					CurrencyToCountry currToCount = new CurrencyToCountry(currencyFromRepo, save);
+					currency2.setCurrencyToRates(Arrays.asList(currToCount));
+					currencyToCountryRepository.save(currToCount);
+				}
+			}
 		} else {
 			Currency addedCurr = currencyRepository.save(currency2);
-			countryRepository.save(currency2.getCurrencyToRates().get(0).getCountry());
-//			rateRepository.saveAll(currency2.getRates());
-			currencyToCountryRepository.saveAll(currency2.getCurrencyToRates());
+			Country countryFromRepo = countryRepository
+					.findByname(currency2.getCurrencyToRates().get(0).getCountry().getName());
+			if (Objects.nonNull(countryFromRepo)) {
+				CurrencyToCountry currToCount = new CurrencyToCountry(addedCurr, countryFromRepo);
+				currencyToCountryRepository.save(currToCount);
+			} else {
+				countryRepository.save(addedCurr.getCurrencyToRates().get(0).getCountry());
+			}
 		}
 		addRateIfCurrencyExsists(currency2);
 	}
