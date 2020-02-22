@@ -14,6 +14,8 @@ import com.djedra.nbpjsontopojo.currency.NBPCurrencyPOJO;
 import com.djedra.parser.IParser;
 import com.djedra.repository.ICountryRepository;
 import com.djedra.repository.ICurrencyRepository;
+import com.djedra.repository.ICurrencyToCountryRepository;
+import com.djedra.repository.IRateRepository;
 import com.djedra.util.Constants;
 import com.djedra.util.Constants.CurrencyNBPAPIParamsKey;
 import com.djedra.util.Constants.ExchangeRateTableTypes;
@@ -25,31 +27,39 @@ public class CurrencyService {
 	private IDataProvider<NBPCurrencyPOJO> dataProvider;
 	private IParser<NBPCurrencyPOJO, Currency> parser;
 	private ICountryRepository countryRepository;
+	private ICurrencyToCountryRepository currencyToRateRepository;
+	private IRateRepository rateRepository;
 
 	@Autowired
 	public CurrencyService(ICurrencyRepository currencyRepository, ICountryRepository countryRepository,
+			ICurrencyToCountryRepository currencyToRateRepository, IRateRepository rateRepository,
 			IDataProvider<NBPCurrencyPOJO> dataProvider, IParser<NBPCurrencyPOJO, Currency> parser) {
 		this.currencyRepository = currencyRepository;
 		this.dataProvider = dataProvider;
 		this.parser = parser;
 		this.countryRepository = countryRepository;
+		this.currencyToRateRepository = currencyToRateRepository;
+		this.rateRepository = rateRepository;
 	}
 
-	public Currency getExchangeRateForDate(ExchangeRateTableTypes tableType, String currencyCode,
-			LocalDate date) {
+	public Currency getExchangeRateForDate(ExchangeRateTableTypes tableType, String currencyCode, LocalDate date) {
 		Currency currency = currencyRepository.findByCodeAndRates_Date(currencyCode, date);
 		if (Objects.isNull(currency)) {
-			currency = saveDataFromDataProvider(tableType, currencyCode, date);
+			currency = reciveDataFromNBP(tableType, currencyCode, date);
+			currency = currencyRepository.save(currency);
+			countryRepository.save(currency.getCurrencyToRates().get(0).getCountry());
+			rateRepository.saveAll(currency.getRates());
+			currencyToRateRepository.saveAll(currency.getCurrencyToRates());
 		}
 		return currency;
 	}
 
 	@Transactional
-	private Currency saveDataFromDataProvider(ExchangeRateTableTypes tableType, String currencyCode,
-			LocalDate date) {
+	private Currency reciveDataFromNBP(ExchangeRateTableTypes tableType, String currencyCode, LocalDate date) {
 		Currency currency = null;
 		int loop = Constants.NUMBER_OF_REPEATINGS_IN_SEARCH_FOR_DAY;
-		HashMap<String, Object> paramsForNBPAPIDataProvider = prepareParamsForNBPAPIDataProvider(tableType, currencyCode, date);
+		HashMap<String, Object> paramsForNBPAPIDataProvider = prepareParamsForNBPAPIDataProvider(tableType,
+				currencyCode, date);
 		while (!dataProvider.hasData(paramsForNBPAPIDataProvider) && loop > 0) {
 			date = date.minusDays(1);
 			paramsForNBPAPIDataProvider.put(CurrencyNBPAPIParamsKey.DATE.getParamName(), date);
@@ -59,8 +69,7 @@ public class CurrencyService {
 		if (Objects.nonNull(nbpCurrencyPOJO) && Objects.nonNull(nbpCurrencyPOJO.getRates())
 				&& nbpCurrencyPOJO.getRates().size() == 1) {
 			currency = parser.parse(nbpCurrencyPOJO);
-			currency = currencyRepository.save(currency);
-			countryRepository.saveAll(currency.getCountry());
+
 		}
 		return currency;
 	}
@@ -68,22 +77,21 @@ public class CurrencyService {
 	public Currency getCurrentExchangeRate(ExchangeRateTableTypes tableType, String currencyCode) {
 		Currency currency = currencyRepository.findByCodeAndRates_Date(currencyCode, LocalDate.now());
 		if (Objects.isNull(currency)) {
-			currency = saveDataFromDataProvider(tableType, currencyCode, null);
+			currency = reciveDataFromNBP(tableType, currencyCode, null);
 		}
 		return currency;
 	}
-	
-	private HashMap<String, Object> prepareParamsForNBPAPIDataProvider(ExchangeRateTableTypes tableType, String currencyCode,
-			LocalDate date){
+
+	private HashMap<String, Object> prepareParamsForNBPAPIDataProvider(ExchangeRateTableTypes tableType,
+			String currencyCode, LocalDate date) {
 		HashMap<String, Object> params = new HashMap<String, Object>();
 		params.put(CurrencyNBPAPIParamsKey.TABLE_TYPE.getParamName(), tableType);
 		params.put(CurrencyNBPAPIParamsKey.CURRENCY_CODE.getParamName(), currencyCode);
-		if(Objects.nonNull(date)) {
+		if (Objects.nonNull(date)) {
 			params.put(CurrencyNBPAPIParamsKey.DATE.getParamName(), date);
 		}
 		return params;
 	}
-
 
 	public void delete(Long currency_Id) {
 		currencyRepository.deleteById(currency_Id);
@@ -94,7 +102,8 @@ public class CurrencyService {
 	}
 
 	public Currency getById(Long currency_Id) {
-		return currencyRepository.findById(currency_Id).orElseThrow(() -> new RuntimeException(String.format("Didn't find currency having Id: [%d]", currency_Id)));
+		return currencyRepository.findById(currency_Id).orElseThrow(
+				() -> new RuntimeException(String.format("Didn't find currency having Id: [%d]", currency_Id)));
 	}
 
 }

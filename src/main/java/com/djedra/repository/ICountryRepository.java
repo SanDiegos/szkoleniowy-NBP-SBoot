@@ -6,4 +6,5 @@ import com.djedra.entity.Country;
 
 public interface ICountryRepository extends JpaRepository<Country, Long> {
 
+	public Country findByname(String name);
 }

@@ -8,8 +8,9 @@ import com.djedra.entity.Currency;
 
 public interface ICurrencyRepository extends JpaRepository<Currency, Long> {
 
-	public Currency findByCodeAndRates_Date(String currencyCode,
-	LocalDate date);
+	public Currency findByCodeAndRates_Date(String currencyCode, LocalDate date);
+
+	public Currency findByCode(String currencyCode);
 
 //
 //	public List<Currency> findCurrencyByCode(String currencyCode);

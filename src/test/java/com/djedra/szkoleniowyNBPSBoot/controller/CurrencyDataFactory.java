@@ -9,9 +9,9 @@ import com.djedra.nbpjsontopojo.currency.NBPCurrencyRatePOJO;
 public class CurrencyDataFactory {
 
 	public static LocalDate VALID_EFFECTIVE_DATA = LocalDate.of(2020, 02, 02);
-	
+
 	public static Currency createValidData(List<NBPCurrencyRatePOJO> rateList) {
-		Currency currency = new Currency("", null, null);
+		Currency currency = new Currency("");
 		currency.setId(1L);
 		currency.setCode("code");
 //		currency.setRates(rateList);

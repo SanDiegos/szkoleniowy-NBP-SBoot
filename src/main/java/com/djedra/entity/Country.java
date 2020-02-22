@@ -1,15 +1,14 @@
 package com.djedra.entity;
 
-import java.util.Set;
+import java.util.List;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
@@ -27,12 +26,13 @@ public class Country {
 	public Country(String name) {
 		this.name = name;
 	}
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+	@Column(unique = true)
 	private String name;
-	@ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-	@JoinTable(name = "country_currency", joinColumns = @JoinColumn(name = "country_id"), inverseJoinColumns = @JoinColumn(name = "currency_id"))
+	@OneToMany(cascade = CascadeType.REMOVE, mappedBy = "country")
 	@JsonBackReference
-	private Set<Currency> currency;
+	private List<CurrencyToCountry> currencyToCountry;
 }
