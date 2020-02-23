@@ -30,4 +30,14 @@ public class DataFactory {
 		currency.setCurrencyToRates(Arrays.asList(currToCountry));
 		return currency;
 	}
+
+	public static List<Currency> getExampleData() {
+		List<Currency> currencyList = new ArrayList<>();
+		currencyList.add(DataFactory.getData(LocalDate.now(), BigDecimal.valueOf(1), "Polska", "Zloty"));
+		currencyList.add(DataFactory.getData(LocalDate.now(), BigDecimal.valueOf(2), "Polska", "Zloty"));
+		currencyList.add(DataFactory.getData(LocalDate.now(), BigDecimal.valueOf(44), "Niemcy", "Euro"));
+		currencyList.add(DataFactory.getData(LocalDate.now(), BigDecimal.valueOf(55), "Niemcy", "Euro"));
+		currencyList.add(DataFactory.getData(LocalDate.now(), BigDecimal.valueOf(66), "Niemcy", "Marka"));
+		return currencyList;
+	}
 }

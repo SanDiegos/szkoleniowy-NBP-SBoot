@@ -18,9 +18,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.djedra.entity.Country;
 import com.djedra.entity.Currency;
+import com.djedra.entity.Rate;
 import com.djedra.facade.CurrencyFacade;
-import com.djedra.nbpexchangeratestablepojo.exchangeratestable.NBPExchangeRatesTableRatesPOJO;
 
 @RestController
 @RequestMapping(value = "/currency")
@@ -32,7 +33,7 @@ public class CurrencyController {
 	@Valid
 	@GetMapping("/get-by-date")
 	public Currency getExchangeRateForDate(@RequestParam String tableType, @RequestParam String currencyCode,
-			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)  @PastOrPresent LocalDate date) {
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) @PastOrPresent LocalDate date) {
 		ControllerArgumentsValidator.checkIfDateIsPastOrPresent(date);
 		return currencyFacade.getExchangeRateForDate(tableType, currencyCode, date);
 	}
@@ -47,40 +48,42 @@ public class CurrencyController {
 	public Currency getByCurrencyCode(@RequestParam String tableType, @RequestParam String currencyCode)
 			throws Exception {
 		return currencyFacade.getCurrentExchangeRate(tableType, currencyCode);
-	}	
-	
+	}
+
 	@GetMapping("/get-highest_currency-course_between_dates")
-	public BigDecimal getHighestCurrencyCourseBetweenDates(@RequestParam String currencyCode, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo)
-			throws Exception {
+	public Rate getHighestCurrencyCourseBetweenDates(@RequestParam String currencyCode,
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo) throws Exception {
 		return currencyFacade.getHighestCurrencyCourseBetweenDates(currencyCode, dateFrom, dateTo);
 	}
-	
+
 	@GetMapping("/get-currency-highest-course-diffrence-between-dates")
-	public String getCurrencyWithHighestCourseDiffrenceBetweenDates(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom, @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo)
-			throws Exception {
+	public String getCurrencyWithHighestCourseDiffrenceBetweenDates(
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo) throws Exception {
 		return currencyFacade.getCurrencyWithHighestCourseDiffrenceBetweenDates(dateFrom, dateTo);
 	}
-	
+
 	@GetMapping("/get-country-having-more-than-one-currency")
-	public List<String> getCountryHavingMoreThanOneCurrency() throws Exception {
+	public List<Country> getCountryHavingMoreThanOneCurrency() throws Exception {
 		return currencyFacade.getCountryHavingMoreThanOneCurrency();
 	}
-	
+
 //	tu dodać daty aby określić z jakiego okresu?
 	@GetMapping("/get-five-highest-and-lowest-currency-courses")
-	public List<NBPExchangeRatesTableRatesPOJO> getFiveHighestAndLowestCurrencyCourse(@RequestParam String tableType,
+	public List<Rate> getFiveHighestAndLowestCurrencyCourse(@RequestParam String tableType,
 			@RequestParam String currencyCode,
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,
 			@RequestParam Boolean topHigh) {
 		return currencyFacade.getFiveHighestOrLowestCurrencyCourse(tableType, currencyCode, dateFrom, dateTo, topHigh);
 	}
-	
+
 	@PostMapping()
 	public Currency add(@RequestBody Currency currency) {
 		return currencyFacade.save(currency);
 	}
-	
+
 	@DeleteMapping
 	public void delete(@PathVariable Long currency_Id) {
 		currencyFacade.delete(currency_Id);
@@ -90,5 +93,5 @@ public class CurrencyController {
 	public Currency getById(@PathVariable Long currency_Id) {
 		return currencyFacade.getById(currency_Id);
 	}
-	
+
 }

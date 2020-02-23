@@ -3,15 +3,13 @@ package com.djedra.parser;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import org.springframework.stereotype.Component;
 
-import com.djedra.entity.Country;
 import com.djedra.entity.Currency;
-import com.djedra.entity.Rate;
 import com.djedra.nbpexchangeratestablepojo.exchangeratestable.NBPExchangeRatesTablePOJO;
 import com.djedra.nbpexchangeratestablepojo.exchangeratestable.NBPExchangeRatesTableRatesPOJO;
+import com.djedra.util.DataFactory;
 
 @Component
 public class NBPExchangeRatesTablePOJOToCurrencyParser implements IParser<NBPExchangeRatesTablePOJO[], List<Currency>> {
@@ -21,39 +19,17 @@ public class NBPExchangeRatesTablePOJOToCurrencyParser implements IParser<NBPExc
 		if (Objects.isNull(dataToParse)) {
 			return null;
 		}
-		List<Currency> currencysToRet = new ArrayList<Currency>();
-//		List<Rate> ratesToRet = new ArrayList<Rate>();
-//		Set<Country> countries = new HashSet<Country>();
-		List<Country> countries = new ArrayList<Country>();
-		for (NBPExchangeRatesTablePOJO nbptable : dataToParse) {
-			List<NBPExchangeRatesTableRatesPOJO> nbprates = nbptable.getRates();
-			for (NBPExchangeRatesTableRatesPOJO nbpRate : nbprates) {
-				Currency currency = new Currency();
-				Rate rates = new Rate(nbptable.getEffectiveDate(), nbpRate.getMid());
-				Country country = new Country(nbpRate.getCurrency());
-				Optional<Country> findFirstCountry = countries.stream()
-						.filter(c -> c.getName().equals(nbpRate.getCurrency())).findFirst();
-				if (findFirstCountry.isPresent()) {
-					country = findFirstCountry.get();
-				} else {
-					countries.add(country);
-				}
-//				List<Country> countries = new ArrayList<Country>();
+		List<Currency> currencyToRet = new ArrayList<>();
 
-				Optional<Currency> findFirstCurrency = currencysToRet.stream()
-						.filter(c -> c.getCode().equals(nbpRate.getCode())).findFirst();
-//				if (findFirstCurrency.isPresent()) {
-//					currency = findFirstCurrency.get();
-//					currency.setRates(Arrays.asList(rates));
-//					currency.setCountry(Arrays.asList(country));
-//					currencysToRet.add(currency);
-//				} else {
-//					currency = new Currency(nbpRate.getCode(), Arrays.asList(rates), Arrays.asList(country));
-//					currencysToRet.add(currency);
-//				}
+		for (NBPExchangeRatesTablePOJO data : dataToParse) {
+			List<NBPExchangeRatesTableRatesPOJO> rates = data.getRates();
+			for (NBPExchangeRatesTableRatesPOJO rate : rates) {
+				Currency currency = DataFactory.getData(data.getEffectiveDate(), rate.getMid(), rate.getCurrency(),
+						rate.getCode());
+				currencyToRet.add(currency);
 			}
 		}
-		return currencysToRet;
+		return currencyToRet;
 	}
 
 //	List<NBPExchangeRatesTableRatesPOJO> nbprates = data.getRates();

@@ -18,7 +18,6 @@ import com.djedra.entity.Currency;
 import com.djedra.entity.CurrencyToCountry;
 import com.djedra.entity.Rate;
 import com.djedra.nbpexchangeratestablepojo.exchangeratestable.NBPExchangeRatesTablePOJO;
-import com.djedra.nbpexchangeratestablepojo.exchangeratestable.NBPExchangeRatesTableRatesPOJO;
 import com.djedra.parser.IParser;
 import com.djedra.repository.ICountryRepository;
 import com.djedra.repository.ICurrencyRepository;
@@ -51,60 +50,38 @@ public class ExchangeRatesService {
 		this.currencyToCountryRepository = currencyToRateRepository;
 	}
 
-	public BigDecimal getHighestExchangeRatesTable(String currencyCode, LocalDate dateFrom, LocalDate dateTo) {
-//		uploadDataToDB(null, dateFrom, dateTo);
-
-//		uploadDataToDB(null, dateFrom, dateTo);
-//		return findAny.orElseThrow(
-//				() -> new ExchangeRatesTableServiceException(String.format("Didnt find currency course for %s ", currencyCode)));
-		return BigDecimal.ONE;
+	public Rate getHighestExchangeRatesTable(String currencyCode, LocalDate dateFrom, LocalDate dateTo) {
+		uploadDataToDB(null, dateFrom, dateTo);
+		return rateRepository.findFirstByCurrency_CodeAndDateBetweenOrderByMidDesc(currencyCode, dateFrom, dateTo);
 	}
 
 	public String getCurrencyWithHighestDeffrenceBetweenDates(LocalDate dateFrom, LocalDate dateTo) {
-//		uploadDataToDB(null, dateFrom, dateTo);
-		Currency currency = DataFactory.getData(LocalDate.now(), BigDecimal.valueOf(1), "Polska", "Zloty");
-		Currency currency2 = DataFactory.getData(LocalDate.now(), BigDecimal.valueOf(2), "Polska", "Zloty");
-		Currency currency3 = DataFactory.getData(LocalDate.now(), BigDecimal.valueOf(3), "Niemcy", "Zloty");
-		Currency currency4 = DataFactory.getData(LocalDate.now(), BigDecimal.valueOf(44), "Niemcy", "Euro");
-
-		currency = currencyRepository.save(currency);
-		countryRepository.save(currency.getCurrencyToRates().get(0).getCountry());
-		rateRepository.saveAll(currency.getRates());
-		currencyToCountryRepository.saveAll(currency.getCurrencyToRates());
-
-		save(currency2);
-		save(currency3);
-		save(currency4);
-
-//		}
-
-//		currencyRepository.save(currency2);
-//		countryRepository.saveAll(currency2.getCountry());
-//		Object[] maxDiffrence = findCountryHavingMoreThanOneCurrency.stream()
-//				.max(Comparator.comparingDouble(d -> ((BigDecimal) d[0]).doubleValue())).orElseThrow(
-//						() -> new RuntimeException("Didnt find max diffrence between max and min value of currency"));
-
-		return "";
+		uploadDataToDB(null, dateFrom, dateTo);
+		List<Object[]> highestDiffrence = currencyRepository.findHighestCurrencyCourseDeffrenceBetweenDates();
+		return String.format("Highest diffrence of currency course from [%s] to [%s] : was: %s diffrence: [%s]",
+				dateFrom.toString(), dateTo.toString(), highestDiffrence.get(0)[1], highestDiffrence.get(0)[0]);
 
 	}
 
-	private void save(Currency currency2) {
+	@Transactional
+	private void saveWithoutDuplicates(Currency currency2) {
 		Currency currencyFromRepo = currencyRepository.findByCode(currency2.getCode());
 		if (Objects.nonNull(currencyFromRepo)) {
 			List<CurrencyToCountry> currencyToRate = currencyFromRepo.getCurrencyToRates();
 			List<String> currencyCodes = currencyToRate.stream().map(ctr -> ctr.getCurrency().getCode())
-					.collect(Collectors.toList());
-			List<String> currencyCountrys = currencyToRate.stream().map(ctr -> ctr.getCountry().getName())
 					.collect(Collectors.toList());
 			if (!currencyCodes.contains(currency2.getCode())) {
 				Country save = countryRepository.save(currency2.getCurrencyToRates().get(0).getCountry());
 				CurrencyToCountry currToCount = new CurrencyToCountry(currency2, save);
 				currencyToCountryRepository.save(currToCount);
 			}
+
 			List<String> collect = currency2.getCurrencyToRates().stream().map(ctr -> ctr.getCountry().getName())
 					.collect(Collectors.toList());
+			List<String> currencyCountries = currencyToRate.stream().map(ctr -> ctr.getCountry().getName())
+					.collect(Collectors.toList());
 			for (String c : collect) {
-				if (!currencyCountrys.contains(c)) {
+				if (!currencyCountries.contains(c)) {
 					Country save = countryRepository.save(currency2.getCurrencyToRates().get(0).getCountry());
 					CurrencyToCountry currToCount = new CurrencyToCountry(currencyFromRepo, save);
 					currency2.setCurrencyToRates(Arrays.asList(currToCount));
@@ -120,17 +97,25 @@ public class ExchangeRatesService {
 				currencyToCountryRepository.save(currToCount);
 			} else {
 				countryRepository.save(addedCurr.getCurrencyToRates().get(0).getCountry());
+				currencyToCountryRepository.saveAll(currency2.getCurrencyToRates());
 			}
 		}
 		addRateIfCurrencyExsists(currency2);
 	}
 
+	@Transactional
 	private void addRateIfCurrencyExsists(Currency currency2) {
 		Currency currencyFromRepo = currencyRepository.findByCode(currency2.getCode());
 		if (Objects.nonNull(currencyFromRepo)) {
 			List<Rate> curr2Rates = currency2.getRates();
 			curr2Rates.forEach(r -> r.setCurrency(currencyFromRepo));
-			rateRepository.saveAll(curr2Rates);
+			for (Rate rate : curr2Rates) {
+				Currency exsistingCurrency = currencyRepository.findByCodeAndRates_Date(currency2.getCode(),
+						rate.getDate());
+				if (Objects.isNull(exsistingCurrency)) {
+					rateRepository.save(rate);
+				}
+			}
 		}
 	}
 
@@ -140,53 +125,9 @@ public class ExchangeRatesService {
 				.downloadData(prepareParamsForNBPAPIDataProvider(tableType, dateFrom, dateTo));
 		if (Objects.nonNull(downloadedData)) {
 			List<Currency> dataFromNBP = parser.parse(downloadedData);
-//			for (Currency currency : dataFromNBP) {
-//				Currency currencyFromRepo = currencyRepository.findByCode(currency.getCode());
-//				if (Objects.nonNull(currencyFromRepo)) {
-//					currency = currencyFromRepo;
-//				}
-//				Country country = currency.getCountry().iterator().next();
-//				Country countryFromRepo = countryRepository.findByname(country.getName());
-//				if (Objects.nonNull(countryFromRepo)) {
-//					country = countryFromRepo;
-//					currency.setCountry(Arrays.asList(countryFromRepo));
-//				}
-////				currencyRepository.saveAll(dataFromNBP);
-//				currencyRepository.save(currency);
-//			}
-//			currencyRepository.saveAll(parser.parse(downloadedData));
-//			Optional<List<Country>> countries = dataFromNBP.parallelStream().map(d -> d.getCountry()).findAny();
-//			countries.ifPresent(c -> countryRepository.saveAll(c));
-//			if (countries.isPresent()) {
-//				countryRepository.saveAll(countries.get());
-//			}
+			dataFromNBP.forEach(c -> saveWithoutDuplicates(c));
 		}
 	}
-
-//	@Transactional
-//	private void uploadDataFromNBPToDB(ExchangeRatesTableTypes tableType, LocalDate dateFrom, LocalDate dateTo) {
-//		NBPExchangeRatesTablePOJO[] downloadedData = dataProvider
-//				.downloadData(prepareParamsForNBPAPIDataProvider(tableType, dateFrom, dateTo));
-//		if (Objects.nonNull(downloadedData)) {
-//			List<Currency> dataFromNBP = new ArrayList<Currency>();
-//			currencyRepository.saveAll(parser.parse(downloadedData));
-//			Optional<Set<Country>> countries = dataFromNBP.parallelStream().map(d -> d.getCountry()).findAny();
-//			if (countries.isPresent()) {
-//				countryRepository.saveAll(countries.get());
-//			}
-//		}
-//	}
-
-//	ExchangeRatesTable[] downloadedData = dataProvider
-//			.downloadData(prepareParamsForNBPAPIDataProvider(null, dateFrom, dateTo));
-//	if (Objects.nonNull(downloadedData)) {
-//		for (ExchangeRatesTable data : downloadedData) {
-//			for (Rates rates : data.getRates()) {
-//				rates.setExchangeRatesTable(data);
-//			}
-//			iExchangeRatesTableRepository.save(data);
-//		}
-//	}
 
 	private HashMap<String, Object> prepareParamsForNBPAPIDataProvider(ExchangeRatesTableTypes tableType,
 			LocalDate dateFrom, LocalDate dateTo) {
@@ -198,22 +139,19 @@ public class ExchangeRatesService {
 		return params;
 	}
 
-	public List<String> getCountryHavingMoreThanOneCurrency() {
+	public List<Country> getCountryHavingMoreThanOneCurrency() {
 		LocalDate now = LocalDate.now();
 		uploadDataToDB(null, now.minusDays(2), now.minusDays(1));
-//		List<Rates> rates = iRatesRepository.findCountryHavingMoreThanOneCurrency();
-		return Arrays.asList("");
+		saveWithoutDuplicates(DataFactory.getData(now.minusDays(2), BigDecimal.ONE, "dolar amerykański", "SomeCurrency"));
+		List<Country> countries = currencyToCountryRepository.findCountryHavingMoreThanOneCurrency();
+		return countries;
 	}
 
-	public List<NBPExchangeRatesTableRatesPOJO> getFiveHighestOrLowestCurrencyCourse(ExchangeRatesTableTypes tableType,
-			String currencyCode, LocalDate dateFrom, LocalDate dateTo, boolean topHigh) {
+	public List<Rate> getFiveHighestOrLowestCurrencyCourse(ExchangeRatesTableTypes tableType, String currencyCode,
+			LocalDate dateFrom, LocalDate dateTo, boolean topHigh) {
 		uploadDataToDB(tableType, dateFrom, dateTo);
-//		List<ExchangeRatesTable> top5 = iExchangeRatesTableRepository
-//				.findTop5ByRates_CodeAndEffectiveDateBetweenOrderByRates_rateDesc(currencyCode, dateFrom, dateTo);
-//
-//		List<ExchangeRatesTable> low5 = iExchangeRatesTableRepository
-//				.findTop5ByRates_CodeAndEffectiveDateBetweenOrderByRates_rateAsc(currencyCode, dateFrom, dateTo);
-
-		return null;
+		return topHigh
+				? rateRepository.findTop5ByCurrency_CodeAndDateBetweenOrderByMidDesc(currencyCode, dateFrom, dateTo)
+				: rateRepository.findTop5ByCurrency_CodeAndDateBetweenOrderByMidAsc(currencyCode, dateFrom, dateTo);
 	}
 }
