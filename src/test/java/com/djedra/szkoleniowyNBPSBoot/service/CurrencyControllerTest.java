@@ -36,7 +36,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @WebMvcTest(CurrencyController.class)
 @ExtendWith(MockitoExtension.class)
 @TestInstance(Lifecycle.PER_CLASS)
-public class ControllerTest {
+public class CurrencyControllerTest {
 
 	private String currencyCode = "curr";
 	private LocalDate date = LocalDate.of(2020, 02, 20);
@@ -51,7 +51,7 @@ public class ControllerTest {
 	private BigDecimal mid = BigDecimal.valueOf(11);
 	private Rate rate = new Rate(date, mid);
 	private Country country = new Country("country");
-	CurrencyToCountry currencyToCountry = new CurrencyToCountry(null, country);
+	private CurrencyToCountry currencyToCountry = new CurrencyToCountry(null, country);
 	private Currency currency = new Currency(1L, currencyCode, Arrays.asList(rate), Arrays.asList(currencyToCountry));
 
 	@BeforeAll
