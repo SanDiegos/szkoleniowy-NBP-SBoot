@@ -47,9 +47,9 @@ public class CurrencyService {
 		if (Objects.isNull(currency)) {
 			currency = reciveDataFromNBP(tableType, currencyCode, date);
 			currency = currencyRepository.save(currency);
-			countryRepository.save(currency.getCurrencyToRates().get(0).getCountry());
+			countryRepository.save(currency.getCurrencyToCountry().get(0).getCountry());
 			rateRepository.saveAll(currency.getRates());
-			currencyToRateRepository.saveAll(currency.getCurrencyToRates());
+			currencyToRateRepository.saveAll(currency.getCurrencyToCountry());
 		}
 		return currency;
 	}

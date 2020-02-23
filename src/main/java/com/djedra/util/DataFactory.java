@@ -27,7 +27,7 @@ public class DataFactory {
 			currToCountry.setCurrency(currency);
 		}
 		currency.setRates(rates);
-		currency.setCurrencyToRates(Arrays.asList(currToCountry));
+		currency.setCurrencyToCountry(Arrays.asList(currToCountry));
 		return currency;
 	}
 

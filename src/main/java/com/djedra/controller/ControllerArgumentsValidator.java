@@ -2,6 +2,8 @@ package com.djedra.controller;
 
 import java.time.LocalDate;
 
+import javax.validation.ValidationException;
+
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -11,13 +13,13 @@ public class ControllerArgumentsValidator {
 
 	public static void checkIfDateIsPastOrPresent(LocalDate date) {
 		if (date.isAfter(LocalDate.now())) {
-			throw new RuntimeException("You cannot search for course currency in future.");
+			throw new ValidationException("You cannot search for course currency in future.");
 		}
 	}
-	
+
 	public static void checkIfDateFromIsBeforeDateTo(LocalDate dateFrom, LocalDate dateTo) {
 		if (dateFrom.isAfter(dateTo)) {
-			throw new RuntimeException("Wrong dates \"from\" and \"to\".");
+			throw new ValidationException("Wrong dates \"from\" and \"to\".");
 		}
 	}
 }

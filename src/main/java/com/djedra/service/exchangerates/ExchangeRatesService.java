@@ -63,41 +63,58 @@ public class ExchangeRatesService {
 
 	}
 
+	public List<Country> getCountryHavingMoreThanOneCurrency() {
+		LocalDate now = LocalDate.now();
+		uploadDataToDB(null, now.minusDays(2), now.minusDays(1));
+		saveWithoutDuplicates(
+				DataFactory.getData(now.minusDays(2), BigDecimal.ONE, "dolar amerykański", "SomeCurrency"));
+		List<Country> countries = currencyToCountryRepository.findCountryHavingMoreThanOneCurrency();
+		return countries;
+	}
+
+	public List<Rate> getFiveHighestOrLowestCurrencyCourse(ExchangeRatesTableTypes tableType, String currencyCode,
+			LocalDate dateFrom, LocalDate dateTo, boolean topHigh) {
+		uploadDataToDB(tableType, dateFrom, dateTo);
+		return topHigh
+				? rateRepository.findTop5ByCurrency_CodeAndDateBetweenOrderByMidDesc(currencyCode, dateFrom, dateTo)
+				: rateRepository.findTop5ByCurrency_CodeAndDateBetweenOrderByMidAsc(currencyCode, dateFrom, dateTo);
+	}
+
 	@Transactional
 	private void saveWithoutDuplicates(Currency currency2) {
 		Currency currencyFromRepo = currencyRepository.findByCode(currency2.getCode());
 		if (Objects.nonNull(currencyFromRepo)) {
-			List<CurrencyToCountry> currencyToRate = currencyFromRepo.getCurrencyToRates();
+			List<CurrencyToCountry> currencyToRate = currencyFromRepo.getCurrencyToCountry();
 			List<String> currencyCodes = currencyToRate.stream().map(ctr -> ctr.getCurrency().getCode())
 					.collect(Collectors.toList());
 			if (!currencyCodes.contains(currency2.getCode())) {
-				Country save = countryRepository.save(currency2.getCurrencyToRates().get(0).getCountry());
+				Country save = countryRepository.save(currency2.getCurrencyToCountry().get(0).getCountry());
 				CurrencyToCountry currToCount = new CurrencyToCountry(currency2, save);
 				currencyToCountryRepository.save(currToCount);
 			}
 
-			List<String> collect = currency2.getCurrencyToRates().stream().map(ctr -> ctr.getCountry().getName())
+			List<String> collect = currency2.getCurrencyToCountry().stream().map(ctr -> ctr.getCountry().getName())
 					.collect(Collectors.toList());
 			List<String> currencyCountries = currencyToRate.stream().map(ctr -> ctr.getCountry().getName())
 					.collect(Collectors.toList());
 			for (String c : collect) {
 				if (!currencyCountries.contains(c)) {
-					Country save = countryRepository.save(currency2.getCurrencyToRates().get(0).getCountry());
+					Country save = countryRepository.save(currency2.getCurrencyToCountry().get(0).getCountry());
 					CurrencyToCountry currToCount = new CurrencyToCountry(currencyFromRepo, save);
-					currency2.setCurrencyToRates(Arrays.asList(currToCount));
+					currency2.setCurrencyToCountry(Arrays.asList(currToCount));
 					currencyToCountryRepository.save(currToCount);
 				}
 			}
 		} else {
 			Currency addedCurr = currencyRepository.save(currency2);
 			Country countryFromRepo = countryRepository
-					.findByname(currency2.getCurrencyToRates().get(0).getCountry().getName());
+					.findByname(currency2.getCurrencyToCountry().get(0).getCountry().getName());
 			if (Objects.nonNull(countryFromRepo)) {
 				CurrencyToCountry currToCount = new CurrencyToCountry(addedCurr, countryFromRepo);
 				currencyToCountryRepository.save(currToCount);
 			} else {
-				countryRepository.save(addedCurr.getCurrencyToRates().get(0).getCountry());
-				currencyToCountryRepository.saveAll(currency2.getCurrencyToRates());
+				countryRepository.save(addedCurr.getCurrencyToCountry().get(0).getCountry());
+				currencyToCountryRepository.saveAll(currency2.getCurrencyToCountry());
 			}
 		}
 		addRateIfCurrencyExsists(currency2);
@@ -139,19 +156,4 @@ public class ExchangeRatesService {
 		return params;
 	}
 
-	public List<Country> getCountryHavingMoreThanOneCurrency() {
-		LocalDate now = LocalDate.now();
-		uploadDataToDB(null, now.minusDays(2), now.minusDays(1));
-		saveWithoutDuplicates(DataFactory.getData(now.minusDays(2), BigDecimal.ONE, "dolar amerykański", "SomeCurrency"));
-		List<Country> countries = currencyToCountryRepository.findCountryHavingMoreThanOneCurrency();
-		return countries;
-	}
-
-	public List<Rate> getFiveHighestOrLowestCurrencyCourse(ExchangeRatesTableTypes tableType, String currencyCode,
-			LocalDate dateFrom, LocalDate dateTo, boolean topHigh) {
-		uploadDataToDB(tableType, dateFrom, dateTo);
-		return topHigh
-				? rateRepository.findTop5ByCurrency_CodeAndDateBetweenOrderByMidDesc(currencyCode, dateFrom, dateTo)
-				: rateRepository.findTop5ByCurrency_CodeAndDateBetweenOrderByMidAsc(currencyCode, dateFrom, dateTo);
-	}
 }

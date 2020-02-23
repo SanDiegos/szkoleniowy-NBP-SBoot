@@ -29,6 +29,7 @@ public class Rate {
 		this.date = date;
 		this.mid = mid;
 	}
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
