@@ -41,28 +41,12 @@ public class Constants {
 		}
 	}
 
-//	@Getter
-//	public enum CurrencyCode implements IEnumType<String> {
-//		SWEDISH_KORONA("SEK"), SWISS_FRANC("CHF"), EURO("EUR"), US_DOLLAR("USD");
-//
-//		private String currencyCode;
-//
-//		CurrencyCode(String currencyCode) {
-//			this.currencyCode = currencyCode;
-//		}
-//
-//		@Override
-//		public String getValue() {
-//			return currencyCode;
-//		}
-//	}
-
 	public enum httpResponseType {
 		json, xml;
 	}
-	
+
 	@Getter
-	public enum CurrencyNBPAPIParamsKey{
+	public enum CurrencyNBPAPIParamsKey {
 		TABLE_TYPE("tableType"), CURRENCY_CODE("currencyCode"), DATE("date");
 
 		private String paramName;
@@ -72,9 +56,9 @@ public class Constants {
 		}
 
 	}
-	
+
 	@Getter
-	public enum ExchangeRatesTableNBPAPIParamsKey{
+	public enum ExchangeRatesTableNBPAPIParamsKey {
 		TABLE_TYPE("tableType"), DATE_FROM("dateFrom"), DATE_TO("dateTo");
 
 		private String paramName;

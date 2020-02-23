@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.validation.Valid;
 import javax.validation.constraints.PastOrPresent;
@@ -78,7 +79,7 @@ public class CurrencyFacade {
 		currencyService.delete(currency_Id);
 	}
 
-	public Currency getById(Long currency_Id) {
+	public Optional<Currency> getById(Long currency_Id) {
 		return currencyService.getById(currency_Id);
 	}
 

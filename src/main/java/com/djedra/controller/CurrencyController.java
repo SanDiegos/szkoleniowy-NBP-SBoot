@@ -3,6 +3,7 @@ package com.djedra.controller;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import javax.validation.Valid;
 import javax.validation.constraints.PastOrPresent;
@@ -69,7 +70,6 @@ public class CurrencyController {
 		return currencyFacade.getCountryHavingMoreThanOneCurrency();
 	}
 
-//	tu dodać daty aby określić z jakiego okresu?
 	@GetMapping("/get-five-highest-and-lowest-currency-courses")
 	public List<Rate> getFiveHighestAndLowestCurrencyCourse(@RequestParam String tableType,
 			@RequestParam String currencyCode,
@@ -90,7 +90,7 @@ public class CurrencyController {
 	}
 
 	@GetMapping
-	public Currency getById(@PathVariable Long currency_Id) {
+	public Optional<Currency> getById(@PathVariable Long currency_Id) {
 		return currencyFacade.getById(currency_Id);
 	}
 

@@ -3,6 +3,7 @@ package com.djedra.service.currency;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -101,9 +102,8 @@ public class CurrencyService {
 		return currencyRepository.save(currency);
 	}
 
-	public Currency getById(Long currency_Id) {
-		return currencyRepository.findById(currency_Id).orElseThrow(
-				() -> new RuntimeException(String.format("Didn't find currency having Id: [%d]", currency_Id)));
+	public Optional<Currency> getById(Long currency_Id) {
+		return currencyRepository.findById(currency_Id);
 	}
 
 }
