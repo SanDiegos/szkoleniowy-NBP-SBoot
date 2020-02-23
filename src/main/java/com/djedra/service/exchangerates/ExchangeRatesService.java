@@ -1,4 +1,4 @@
-package com.djedra.service.exchangeratestable;
+package com.djedra.service.exchangerates;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

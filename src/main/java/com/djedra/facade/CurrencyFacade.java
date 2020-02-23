@@ -17,7 +17,7 @@ import com.djedra.entity.Country;
 import com.djedra.entity.Currency;
 import com.djedra.entity.Rate;
 import com.djedra.service.currency.CurrencyService;
-import com.djedra.service.exchangeratestable.ExchangeRatesService;
+import com.djedra.service.exchangerates.ExchangeRatesService;
 import com.djedra.util.Constants.ExchangeRateTableTypes;
 import com.djedra.util.Constants.ExchangeRatesTableTypes;
 import com.djedra.util.EnumUtil;

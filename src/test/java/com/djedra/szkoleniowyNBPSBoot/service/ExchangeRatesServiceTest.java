@@ -16,7 +16,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 
 import com.djedra.connection.IDataProvider;
 import com.djedra.nbpexchangeratestablepojo.exchangeratestable.NBPExchangeRatesTablePOJO;
-import com.djedra.service.exchangeratestable.ExchangeRatesService;
+import com.djedra.service.exchangerates.ExchangeRatesService;
 
 @SpringBootTest
 @AutoConfigureMockMvc
