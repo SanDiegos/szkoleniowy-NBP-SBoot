@@ -10,16 +10,16 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import com.djedra.entity.currency.Currency;
 import com.djedra.exception.ConnectionException;
+import com.djedra.nbpjsontopojo.currency.NBPCurrencyPOJO;
 import com.djedra.util.Constants.CurrencyNBPAPIParamsKey;
 import com.djedra.util.Constants.ExchangeRateTableTypes;
 
 @Component
-public class NBPDataProviderCurrency implements IDataProvider<Currency> {
+public class NBPDataProviderCurrency implements IDataProvider<NBPCurrencyPOJO> {
 
 	@Override
-	public Currency downloadData(HashMap<String, Object> params) {
+	public NBPCurrencyPOJO downloadData(HashMap<String, Object> params) {
 		RestTemplate restTemplate = new RestTemplate();
 		
 		LocalDate date = (LocalDate) params.get(CurrencyNBPAPIParamsKey.DATE.getParamName());
@@ -27,7 +27,8 @@ public class NBPDataProviderCurrency implements IDataProvider<Currency> {
 		String currencyCode = (String) params.get(CurrencyNBPAPIParamsKey.CURRENCY_CODE.getParamName());
 		URL path = Objects.isNull(date) ? new ExchangeRateURLEnhancer(tableType, currencyCode).getPath() : new ExchangeRateURLEnhancer(tableType, currencyCode, date).getPath();
 		try {
-			return restTemplate.getForObject(path.toURI(), Currency.class);
+			NBPCurrencyPOJO forObject = restTemplate.getForObject(path.toURI(), NBPCurrencyPOJO.class);
+			return forObject;
 		} catch (RestClientException e) {
 			throw new ConnectionException("Błąd połączenia z zewnętrznym API", e);
 		} catch (URISyntaxException e) {
