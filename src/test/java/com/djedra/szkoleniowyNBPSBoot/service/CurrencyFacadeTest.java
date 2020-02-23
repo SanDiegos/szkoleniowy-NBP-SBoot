@@ -8,8 +8,6 @@ import static org.mockito.Mockito.when;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,6 +27,7 @@ import com.djedra.facade.CurrencyFacade;
 import com.djedra.service.currency.CurrencyService;
 import com.djedra.service.exchangerates.ExchangeRatesService;
 import com.djedra.util.Constants.ExchangeRateTableTypes;
+import com.djedra.util.EnumUtil;
 
 @WebMvcTest(CurrencyFacade.class)
 @ExtendWith(MockitoExtension.class)
@@ -82,9 +81,13 @@ public class CurrencyFacadeTest {
 				() -> currencyFacade.exchange(wrongTableType, currencyCode, BigDecimal.TEN));
 
 		String actualMessage = exception.getMessage();
-		assertTrue(actualMessage.contains("Wrong parameter value passed as for: tableType, [value: " + wrongTableType
-				+ "]. Acceptable values: [" + Stream.of(ExchangeRateTableTypes.class.getEnumConstants())
-						.map(v -> v.getValue()).collect(Collectors.toList())
-				+ "]"));
+
+		String errMessage = null;
+		try {
+			EnumUtil.getEnumByValue("tableType", wrongTableType, ExchangeRateTableTypes.class);
+		} catch (RuntimeException e) {
+			errMessage = e.getMessage();
+		}
+		assertTrue(actualMessage.contains(errMessage));
 	}
 }
