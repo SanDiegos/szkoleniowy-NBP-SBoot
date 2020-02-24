@@ -16,7 +16,9 @@ import com.djedra.connection.IDataProvider;
 import com.djedra.entity.Country;
 import com.djedra.entity.Currency;
 import com.djedra.entity.CurrencyToCountry;
+import com.djedra.entity.ICurrecnyDiffResponse;
 import com.djedra.entity.Rate;
+import com.djedra.exception.ExchangeRatesServiceException;
 import com.djedra.nbpexchangeratestablepojo.exchangeratestable.NBPExchangeRatesTablePOJO;
 import com.djedra.parser.IParser;
 import com.djedra.repository.ICountryRepository;
@@ -55,12 +57,21 @@ public class ExchangeRatesService {
 		return rateRepository.findFirstByCurrency_CodeAndDateBetweenOrderByMidDesc(currencyCode, dateFrom, dateTo);
 	}
 
-	public String getCurrencyWithHighestDeffrenceBetweenDates(LocalDate dateFrom, LocalDate dateTo) {
+	public String getCurrencyWithHighestDiffrenceBetweenDates(LocalDate dateFrom, LocalDate dateTo) {
 		uploadDataToDB(null, dateFrom, dateTo);
+		ICurrecnyDiffResponse highestDiffrenceObj = currencyRepository
+				.findHighestCurrencyCourseDeffrenceBetweenDatesObj();
+		String currencyCode = highestDiffrenceObj.getCurrencyCode();
+		Long currencyId = highestDiffrenceObj.getCurrencyId();
+		BigDecimal diffrence = highestDiffrenceObj.getDiffrence();
+
 		List<Object[]> highestDiffrence = currencyRepository.findHighestCurrencyCourseDeffrenceBetweenDates();
+		if (Objects.isNull(highestDiffrence) || highestDiffrence.size() != 1) {
+			throw new ExchangeRatesServiceException("Data not found");
+
+		}
 		return String.format("Highest diffrence of currency course from [%s] to [%s] : was: %s diffrence: [%s]",
 				dateFrom.toString(), dateTo.toString(), highestDiffrence.get(0)[1], highestDiffrence.get(0)[0]);
-
 	}
 
 	public List<Country> getCountryHavingMoreThanOneCurrency() {
@@ -113,7 +124,9 @@ public class ExchangeRatesService {
 				CurrencyToCountry currToCount = new CurrencyToCountry(addedCurr, countryFromRepo);
 				currencyToCountryRepository.save(currToCount);
 			} else {
-				countryRepository.save(addedCurr.getCurrencyToCountry().get(0).getCountry());
+				if (Objects.nonNull(addedCurr)) {
+					countryRepository.save(addedCurr.getCurrencyToCountry().get(0).getCountry());
+				}
 				currencyToCountryRepository.saveAll(currency2.getCurrencyToCountry());
 			}
 		}

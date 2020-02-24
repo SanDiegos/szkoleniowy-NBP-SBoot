@@ -1,6 +1,8 @@
 package com.djedra.szkoleniowyNBPSBoot.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
@@ -22,7 +24,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import com.djedra.connection.IDataProvider;
 import com.djedra.entity.Country;
 import com.djedra.entity.Rate;
+import com.djedra.exception.ExchangeRatesServiceException;
 import com.djedra.nbpexchangeratestablepojo.exchangeratestable.NBPExchangeRatesTablePOJO;
+import com.djedra.repository.ICurrencyRepository;
 import com.djedra.repository.ICurrencyToCountryRepository;
 import com.djedra.repository.IRateRepository;
 import com.djedra.service.exchangerates.ExchangeRatesService;
@@ -57,6 +61,8 @@ public class ExchangeRatesServiceTest {
 	@MockBean
 	private IRateRepository rateRepository;
 	@MockBean
+	private ICurrencyRepository currencyRepository;
+	@MockBean
 	private ICurrencyToCountryRepository currencyToCountryRepository;
 
 	@Autowired
@@ -75,25 +81,35 @@ public class ExchangeRatesServiceTest {
 	}
 
 	@Test
-	public void getHighestExchangeRatesTableReturnValidData() {
+	public void get_highest_exchange_rates_table_return_valid_data() {
 		Rate returnedData = exchangeRatesTableService.getHighestExchangeRatesTable(currencyCode, dateFrom, dateTo);
 		assertEquals(returnedData, rate);
 	}
 
 	@Test
-	public void getCountryHavingMoreThanOneCurrencyReturnValidData() {
+	public void get_country_having_more_than_one_currency_return_valid_data() {
 		List<Country> returnedData = exchangeRatesTableService.getCountryHavingMoreThanOneCurrency();
 		assertEquals(returnedData, countriesWithMoreThanOneCurrency);
 	}
 
 	@Test
-	public void getFiveHighestOrLowestCurrencyCourseReturnValidData() {
+	public void get_five_highest_or_lowest_currency_course_return_valid_data() {
 		List<Rate> returnedDataTop5 = exchangeRatesTableService
 				.getFiveHighestOrLowestCurrencyCourse(ExchangeRatesTableTypes.A, currencyCode, dateFrom, dateTo, true);
 		List<Rate> returnedDataLow5 = exchangeRatesTableService
 				.getFiveHighestOrLowestCurrencyCourse(ExchangeRatesTableTypes.A, currencyCode, dateFrom, dateTo, false);
 		assertEquals(returnedDataTop5, top5);
 		assertEquals(returnedDataLow5, low5);
+	}
+
+	@Test
+	public void get_currency_with_highest_deffrence_between_dates() {
+		when(currencyRepository.findHighestCurrencyCourseDeffrenceBetweenDates()).thenReturn(null);
+		Exception exception = assertThrows(ExchangeRatesServiceException.class,
+				() -> exchangeRatesTableService.getCurrencyWithHighestDiffrenceBetweenDates(dateFrom, dateTo));
+
+		String actualMessage = exception.getMessage();
+		assertTrue(actualMessage.contains("Data not found"));
 
 	}
 }

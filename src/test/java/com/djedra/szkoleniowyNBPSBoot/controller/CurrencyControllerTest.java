@@ -1,4 +1,4 @@
-package com.djedra.szkoleniowyNBPSBoot.service;
+package com.djedra.szkoleniowyNBPSBoot.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -10,6 +10,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
+
+import javax.validation.ValidationException;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -25,6 +27,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.NestedServletException;
 
+import com.djedra.controller.ControllerArgumentsValidator;
 import com.djedra.controller.CurrencyController;
 import com.djedra.entity.Country;
 import com.djedra.entity.Currency;
@@ -86,7 +89,13 @@ public class CurrencyControllerTest {
 		});
 
 		String actualMessage = exception.getMessage();
-		assertTrue(actualMessage.contains("You cannot search for course currency in future"));
+		String expectedMessage = null;
+		try {
+			ControllerArgumentsValidator.checkIfDateIsPastOrPresent(LocalDate.now().plusDays(1));
+		} catch (ValidationException e) {
+			expectedMessage = e.getMessage();
+		}
+		assertTrue(actualMessage.contains(expectedMessage));
 
 	}
 

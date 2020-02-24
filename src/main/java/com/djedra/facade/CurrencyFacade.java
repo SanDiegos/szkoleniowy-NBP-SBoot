@@ -64,7 +64,7 @@ public class CurrencyFacade {
 
 	public String getCurrencyWithHighestCourseDiffrenceBetweenDates(LocalDate dateFrom, LocalDate dateTo) {
 		ControllerArgumentsValidator.checkIfDateFromIsBeforeDateTo(dateFrom, dateTo);
-		return exchangeRatesTableService.getCurrencyWithHighestDeffrenceBetweenDates(dateFrom, dateTo);
+		return exchangeRatesTableService.getCurrencyWithHighestDiffrenceBetweenDates(dateFrom, dateTo);
 	}
 
 	public List<Country> getCountryHavingMoreThanOneCurrency() {

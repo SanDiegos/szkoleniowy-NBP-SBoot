@@ -1,4 +1,4 @@
-package com.djedra.szkoleniowyNBPSBoot.service;
+package com.djedra.szkoleniowyNBPSBoot.facade;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -67,7 +67,7 @@ public class CurrencyFacadeTest {
 	}
 
 	@Test
-	public void exchange_Didnt_Find_Data_throw_runtime_exception() {
+	public void exchange_data_not_found_throw_runtime_exception() {
 		Exception exception = assertThrows(RuntimeException.class,
 				() -> currencyFacade.exchange(tableTypeC.getValue(), wrongCurrencyCode, BigDecimal.TEN));
 
@@ -81,13 +81,12 @@ public class CurrencyFacadeTest {
 				() -> currencyFacade.exchange(wrongTableType, currencyCode, BigDecimal.TEN));
 
 		String actualMessage = exception.getMessage();
-
-		String errMessage = null;
+		String expectedMessage = null;
 		try {
 			EnumUtil.getEnumByValue("tableType", wrongTableType, ExchangeRateTableTypes.class);
 		} catch (RuntimeException e) {
-			errMessage = e.getMessage();
+			expectedMessage = e.getMessage();
 		}
-		assertTrue(actualMessage.contains(errMessage));
+		assertTrue(actualMessage.contains(expectedMessage));
 	}
 }
